@@ -1,0 +1,15 @@
+[Unit]
+Description=Publish weather forecast for Portugal
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/your_username/scripts/app.py
+User=your_username
+Group=your_username
+Environment=PATH=/usr/bin:/usr/local/bin
+WorkingDirectory=/home/your_username/scripts
+
+[Install]
+WantedBy=multi-user.target
