@@ -1,23 +1,30 @@
 import requests
 import tweepy
 import os
+import dotenv
 
-# === CONFIGURATION ===
-# Twitter API credentials
-client = tweepy.Client(os.enviroment.get('consumer_key'), os.environment.get('consumer_secret'), os.enviroment.get('access_token'), os.environment.get('access_token_secret'))
+# Load environment variables
+dotenv.load_dotenv()
 
-# OpenWeather API key
-API_KEY = os.environ.get('API_WEATHER_KEY')
+# === OAuth 2.0 Authentication with Twitter API ===
+client = tweepy.Client(
+    access_token=os.getenv('ACCESS_TOKEN'),  # OAuth 2.0 access token
+    access_token_secret=os.getenv('ACCESS_TOKEN_SECRET'),  # If you use secret for OAuth 1.0a
+    consumer_key=os.getenv('CONSUMER_KEY'),  # Your Consumer Key (API Key)
+    consumer_secret=os.getenv('CONSUMER_SECRET')  # Your Consumer Secret (API Secret Key)
+)
+
+# === Weather Data ===
+API_KEY = os.getenv('API_WEATHER_KEY')  # OpenWeather API Key
 city = "London"
-country = "uk"  # ISO country code
+country = "uk"
 url = f"https://api.openweathermap.org/data/2.5/weather?q={city},{country}&appid={API_KEY}&units=metric&lang=en"
 
-# === FETCH WEATHER DATA ===
+# Fetch weather data
 res = requests.get(url)
 data = res.json()
-print(data)
 
-# === EXTRACT RELEVANT INFO ===
+# === Extract and format data ===
 city_name = data['name']
 description = data['weather'][0]['description'].capitalize()
 temp = data['main']['temp']
@@ -25,7 +32,6 @@ feels_like = data['main']['feels_like']
 humidity = data['main']['humidity']
 wind = data['wind']['speed']
 
-# === FORMAT THE TWEET ===
 tweet = (
     f"🌤️ Weather update for {city_name}:\n"
     f"🌡️ {temp:.0f}°C (feels like {feels_like:.0f}°C)\n"
@@ -35,10 +41,12 @@ tweet = (
     f"#Weather #Forecast #{city_name.replace(' ', '')}"
 )
 
-# === SEND THE TWEET ===
+# === Send Tweet ===
 try:
     print(tweet)
-    #client.create_tweet(text=tweet)
+    # Posting the tweet using Twitter API v2 (OAuth 2.0)
+    response = client.create_tweet(text=tweet)
     print("✅ Tweet posted successfully!")
+    print("Response:", response)
 except Exception as e:
     print("❌ Error posting tweet:", e)
